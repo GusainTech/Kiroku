@@ -1,4 +1,4 @@
-# 記録 Kiroku
+# Kiroku
 
 > **A calm, local-first personal knowledge workspace combining the structured clarity of Notion with the networked thought of Obsidian.**
 

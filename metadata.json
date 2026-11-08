@@ -1,0 +1,6 @@
+{
+  "name": "Kiroku",
+  "description": "Kiroku (記録) — an elegant, local-first personal knowledge management workspace combining the best of Notion and Obsidian.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

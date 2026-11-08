@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    /* Soft Paper Palette (Light Mode) */
+    --bg-canvas: #F4F4F0;
+    --bg-sidebar: #EEEEEA;
+    --bg-workspace: #F7F7F3;
+    --bg-surface: #F9F9F5;
+    --bg-elevated: #F2F2ED;
+    --bg-hover: #EAECE6;
+    --bg-active: #E2E4DC;
+
+    --border-main: #E3E4DC;
+    --border-subtle: #ECECE4;
+
+    --text-primary: #30332E;
+    --text-secondary: #777B73;
+    --text-muted: #969990;
+
+    /* Subtle Earthy Accents (Paper Mode) */
+    --accent-sage: #7B8E73;
+    --accent-mint: #659174;
+    --accent-blue: #6B8B9B;
+    --accent-peach: #C7876A;
+    --accent-amber: #B5944B;
+
+    /* Typography */
+    --font-heading: "Nunito Sans", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-serif: "Newsreader", Georgia, Cambria, "Times New Roman", serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  .dark {
+    /* True Charcoal & Graphite Palette (Dark Mode - No greenish tint, no AI slop) */
+    --bg-canvas: #161719;
+    --bg-sidebar: #1B1C1F;
+    --bg-workspace: #1E1F23;
+    --bg-surface: #222428;
+    --bg-elevated: #282A2F;
+    --bg-hover: #2F3238;
+    --bg-active: #383B43;
+
+    --border-main: #32353C;
+    --border-subtle: #26282E;
+
+    --text-primary: #EEEEEE;
+    --text-secondary: #A2A5AC;
+    --text-muted: #6C7078;
+
+    /* Clean, Understated Accents (Graphite Mode) */
+    --accent-primary: #EEEEEE;
+    --accent-slate: #7C9EB2;
+    --accent-clay: #C28B75;
+    --accent-amber: #CFA862;
+    --accent-sage: #8E9E88;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+/* Custom scrollbars with neutral dark / soft paper tints */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(119, 123, 115, 0.25);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(119, 123, 115, 0.45);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(162, 165, 172, 0.25);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(162, 165, 172, 0.45);
+}
+
+/* Typography styles */
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.note-prose-serif {
+  font-family: var(--font-serif);
+}
+
+.note-prose-mono {
+  font-family: var(--font-mono);
+}
+
+.note-prose-sans {
+  font-family: var(--font-body);
+}
+
+/* Hide scrollbar for horizontal toolbars while keeping scroll functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Smooth touch behavior on iOS / mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}

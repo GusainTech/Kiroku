@@ -16,11 +16,13 @@ import {
   ArrowUpRight,
   Palette,
   Clock,
+  AlertCircle,
 } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { extractInternalLinks } from '../../storage/adapter';
 import { getTagColorClasses } from '../../utils/tagColors';
+import { saveCoordinator, type SaveState } from '../../storage/saveCoordinator';
 
 const CURATED_ICONS = [
   '🌿', '📝', '💡', '🗺️', '☕', '📐', '🎯', '🚀',
@@ -54,10 +56,10 @@ export const NoteEditor: React.FC = () => {
 
   if (!activePage) return null;
 
-  // Local state for debounced autosaving
+  // Local input state and coordinator save state
   const [title, setTitle] = useState(activePage.title);
   const [content, setContent] = useState(activePage.content);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
+  const [saveState, setSaveState] = useState<SaveState>(() => saveCoordinator.getState());
   const [showProperties, setShowProperties] = useState(true);
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [showCoverPicker, setShowCoverPicker] = useState(false);
@@ -74,28 +76,26 @@ export const NoteEditor: React.FC = () => {
   const [cursorPosition, setCursorPosition] = useState<number>(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Sync state when active page changes
+  // Subscribe to SaveCoordinator state updates
+  useEffect(() => {
+    return saveCoordinator.subscribe(setSaveState);
+  }, []);
+
+  // Sync state and SaveCoordinator document baseline when active page changes
   useEffect(() => {
     setTitle(activePage.title);
     setContent(activePage.content);
-    setSaveStatus('saved');
+    saveCoordinator.setDocument(activePage.id, activePage.title, activePage.content);
     setShowIconPicker(false);
     setShowCoverPicker(false);
   }, [activePage.id]);
 
-  // Debounced autosave
+  // Unmount cleanup: best-effort flush of any pending edits
   useEffect(() => {
-    const isDifferent = title !== activePage.title || content !== activePage.content;
-    if (!isDifferent) return;
-
-    setSaveStatus('saving');
-    const timer = setTimeout(async () => {
-      await updateCurrentPage({ title, content });
-      setSaveStatus('saved');
-    }, 450);
-
-    return () => clearTimeout(timer);
-  }, [title, content, activePage.title, activePage.content, updateCurrentPage]);
+    return () => {
+      saveCoordinator.flushPendingSave();
+    };
+  }, []);
 
   // Outgoing internal links from this note
   const outgoingLinks = useMemo(() => {
@@ -113,6 +113,7 @@ export const NoteEditor: React.FC = () => {
     const pos = e.target.selectionStart;
     setContent(val);
     setCursorPosition(pos);
+    saveCoordinator.updateDraft(activePage.id, title, val);
 
     // Look backward from cursor to see if user typed `[[`
     const textBeforeCursor = val.slice(0, pos);
@@ -143,6 +144,7 @@ export const NoteEditor: React.FC = () => {
     }
 
     setContent(newContent);
+    saveCoordinator.updateDraft(activePage.id, title, newContent);
     setLinkSuggestQuery(null);
     if (textareaRef.current) {
       textareaRef.current.focus();
@@ -160,6 +162,7 @@ export const NoteEditor: React.FC = () => {
     const replacement = prefix + (selected || 'text') + suffix;
     const newContent = content.substring(0, start) + replacement + content.substring(end);
     setContent(newContent);
+    saveCoordinator.updateDraft(activePage.id, title, newContent);
 
     setTimeout(() => {
       el.focus();
@@ -256,16 +259,34 @@ export const NoteEditor: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 text-xs text-[#777B73] dark:text-[#A2A5AC]">
-            {saveStatus === 'saving' ? (
+            {saveState.status === 'saving' && (
               <span className="flex items-center gap-1.5 text-[#C7876A] dark:text-[#DEB29E] font-semibold">
                 <Clock className="w-3.5 h-3.5 animate-spin" />
                 Saving...
               </span>
-            ) : (
+            )}
+            {saveState.status === 'dirty' && (
+              <span className="flex items-center gap-1.5 text-[#B5944B] dark:text-[#CFA862] font-semibold" title="Unsaved changes pending save">
+                <span className="w-2 h-2 rounded-full bg-[#B5944B] dark:bg-[#CFA862] animate-pulse" />
+                Unsaved changes
+              </span>
+            )}
+            {saveState.status === 'saved' && (
               <span className="flex items-center gap-1 text-[#7B8E73] dark:text-[#EEEEEE] font-semibold">
                 <span>✓</span>
                 Saved
               </span>
+            )}
+            {saveState.status === 'error' && (
+              <button
+                type="button"
+                onClick={() => saveCoordinator.retrySave()}
+                className="flex items-center gap-1.5 text-[#C7876A] dark:text-[#DEB29E] hover:underline font-bold cursor-pointer"
+                title={saveState.errorMessage || 'Failed to save note. Click to retry.'}
+              >
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span>Save failed — Retry</span>
+              </button>
             )}
           </div>
         </div>
@@ -332,7 +353,12 @@ export const NoteEditor: React.FC = () => {
         <input
           type="text"
           value={title}
-          onChange={e => setTitle(e.target.value)}
+          onChange={e => {
+            const newTitle = e.target.value;
+            setTitle(newTitle);
+            saveCoordinator.updateDraft(activePage.id, newTitle, content);
+          }}
+          onBlur={() => saveCoordinator.flushPendingSave()}
           placeholder="Untitled note..."
           className="w-full text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#30332E] dark:text-[#EEEEEE] font-heading bg-transparent border-none outline-none placeholder-[#969990] dark:placeholder-[#6C7078] mb-3"
         />
@@ -595,6 +621,7 @@ export const NoteEditor: React.FC = () => {
                 ref={textareaRef}
                 value={content}
                 onChange={handleContentChange}
+                onBlur={() => saveCoordinator.flushPendingSave()}
                 placeholder="Write your note here... Type [[ to link another page, or use Markdown shortcuts."
                 className={`w-full flex-1 min-h-[340px] p-5 bg-[#F9F9F5] dark:bg-[#222428] border border-[#E3E4DC] dark:border-[#32353C] rounded-2xl outline-none resize-none text-[#30332E] dark:text-[#EEEEEE] leading-relaxed text-sm ${fontClass} focus:border-[#7B8E73] dark:focus:border-[#4B4F58] transition-colors shadow-2xs`}
               />
@@ -640,7 +667,10 @@ export const NoteEditor: React.FC = () => {
             >
               <MarkdownRenderer
                 content={content}
-                onContentChange={newVal => setContent(newVal)}
+                onContentChange={newVal => {
+                  setContent(newVal);
+                  saveCoordinator.updateDraft(activePage.id, title, newVal);
+                }}
                 fontClass={fontClass}
               />
             </div>

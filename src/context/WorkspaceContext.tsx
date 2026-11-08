@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import type { Page, PageId, ContentViewMode, NoteFontFamily, BacklinkInfo } from '../types';
 import { storageAdapter, computeBacklinks } from '../storage/adapter';
+import { saveCoordinator } from '../storage/saveCoordinator';
 
 export type WorkspaceView = 'dashboard' | 'inbox' | 'all-notes' | 'page' | 'trash';
 
@@ -23,12 +24,13 @@ interface WorkspaceContextType {
   allTags: { name: string; count: number }[];
   
   // Navigation & selection
-  selectPage: (id: PageId) => void;
-  openDashboard: () => void;
-  openInbox: () => void;
-  openTrash: () => void;
-  openAllNotes: () => void;
-  filterByTag: (tag: string | null) => void;
+  selectPage: (id: PageId) => Promise<boolean> | void;
+  openDashboard: () => Promise<boolean> | void;
+  openInbox: () => Promise<boolean> | void;
+  openTrash: () => Promise<boolean> | void;
+  openAllNotes: () => Promise<boolean> | void;
+  filterByTag: (tag: string | null) => Promise<boolean> | void;
+  flushPendingSave: () => Promise<{ success: boolean; error?: string }>;
   
   // Page operations
   createPage: (partial?: Partial<Page>, parentId?: PageId | null) => Promise<Page>;
@@ -183,60 +185,137 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       .sort((a, b) => b.count - a.count);
   }, [pages]);
 
+  // Sync updates from SaveCoordinator directly into state
+  useEffect(() => {
+    saveCoordinator.setOnPageSaved((updated: Page) => {
+      setPages(prev => prev.map(p => (p.id === updated.id ? { ...p, ...updated } : p)));
+      setAllPagesWithArchived(prev => prev.map(p => (p.id === updated.id ? { ...p, ...updated } : p)));
+    });
+    return () => {
+      saveCoordinator.setOnPageSaved(null);
+    };
+  }, []);
+
+  // Flush pending saves when tab is hidden or minimized
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        saveCoordinator.flushPendingSave();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  // Warn user on window unload ONLY if genuinely unsaved dirty changes exist
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (saveCoordinator.isDirty()) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
+  // Safe navigation guard: flushes pending saves before switching pages or views
+  const safeNavigate = useCallback(
+    async (navigateAction: () => void | Promise<void>): Promise<boolean> => {
+      const flushResult = await saveCoordinator.flushPendingSave();
+      if (!flushResult.success) {
+        console.warn('[WorkspaceContext] Navigation paused: pending save failed', flushResult.error);
+        return false;
+      }
+      await navigateAction();
+      return true;
+    },
+    []
+  );
+
+  const flushPendingSave = useCallback(async () => {
+    return await saveCoordinator.flushPendingSave();
+  }, []);
+
   // Navigation handlers
-  const selectPage = useCallback((id: PageId) => {
-    setActivePageId(id);
-    setActiveView('page');
-    closeSidebarOnMobile();
-  }, [closeSidebarOnMobile]);
+  const selectPage = useCallback(
+    (id: PageId) => {
+      return safeNavigate(() => {
+        setActivePageId(id);
+        setActiveView('page');
+        closeSidebarOnMobile();
+      });
+    },
+    [closeSidebarOnMobile, safeNavigate]
+  );
 
   const openDashboard = useCallback(() => {
-    setActivePageId(null);
-    setActiveView('dashboard');
-    setSelectedTag(null);
-    closeSidebarOnMobile();
-  }, [closeSidebarOnMobile]);
+    return safeNavigate(() => {
+      setActivePageId(null);
+      setActiveView('dashboard');
+      setSelectedTag(null);
+      closeSidebarOnMobile();
+    });
+  }, [closeSidebarOnMobile, safeNavigate]);
 
   const openInbox = useCallback(() => {
-    setActivePageId(null);
-    setActiveView('inbox');
-    setSelectedTag(null);
-    closeSidebarOnMobile();
-  }, [closeSidebarOnMobile]);
+    return safeNavigate(() => {
+      setActivePageId(null);
+      setActiveView('inbox');
+      setSelectedTag(null);
+      closeSidebarOnMobile();
+    });
+  }, [closeSidebarOnMobile, safeNavigate]);
 
   const openTrash = useCallback(() => {
-    setActivePageId(null);
-    setActiveView('trash');
-    closeSidebarOnMobile();
-  }, [closeSidebarOnMobile]);
+    return safeNavigate(() => {
+      setActivePageId(null);
+      setActiveView('trash');
+      setSelectedTag(null);
+      closeSidebarOnMobile();
+    });
+  }, [closeSidebarOnMobile, safeNavigate]);
 
   const openAllNotes = useCallback(() => {
-    setActivePageId(null);
-    setActiveView('all-notes');
-    closeSidebarOnMobile();
-  }, [closeSidebarOnMobile]);
-
-  const filterByTag = useCallback((tag: string | null) => {
-    setSelectedTag(tag);
-    if (tag) {
+    return safeNavigate(() => {
       setActivePageId(null);
       setActiveView('all-notes');
-    }
-    closeSidebarOnMobile();
-  }, [closeSidebarOnMobile]);
+      closeSidebarOnMobile();
+    });
+  }, [closeSidebarOnMobile, safeNavigate]);
+
+  const filterByTag = useCallback(
+    (tag: string | null) => {
+      return safeNavigate(() => {
+        setSelectedTag(tag);
+        if (tag) {
+          setActivePageId(null);
+          setActiveView('all-notes');
+        }
+        closeSidebarOnMobile();
+      });
+    },
+    [closeSidebarOnMobile, safeNavigate]
+  );
 
   // Operations
   const createPage = useCallback(
     async (partial?: Partial<Page>, parentId?: PageId | null) => {
-      const newPage = await storageAdapter.createPage({
-        ...partial,
-        parentId: parentId !== undefined ? parentId : null,
+      let createdPage: Page | null = null;
+      await safeNavigate(async () => {
+        const newPage = await storageAdapter.createPage({
+          ...partial,
+          parentId: parentId !== undefined ? parentId : null,
+        });
+        await refreshPages();
+        setActivePageId(newPage.id);
+        setActiveView('page');
+        closeSidebarOnMobile();
+        createdPage = newPage;
       });
-      await refreshPages();
-      selectPage(newPage.id);
-      return newPage;
+      return createdPage!;
     },
-    [refreshPages, selectPage]
+    [refreshPages, safeNavigate, closeSidebarOnMobile]
   );
 
   const updateCurrentPage = useCallback(
@@ -261,6 +340,11 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const deletePage = useCallback(
     async (id: PageId, permanent = false) => {
+      if (saveCoordinator.getDocumentId() === id) {
+        saveCoordinator.cancelPendingSave();
+      } else {
+        await saveCoordinator.flushPendingSave();
+      }
       await storageAdapter.deletePage(id, permanent);
       await refreshPages();
       if (activePageId === id) {
@@ -377,6 +461,7 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         openTrash,
         openAllNotes,
         filterByTag,
+        flushPendingSave,
         createPage,
         updateCurrentPage,
         updatePageById,

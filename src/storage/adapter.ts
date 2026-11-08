@@ -87,22 +87,35 @@ export class DexieStorageAdapter implements StorageAdapter {
 
   async updatePage(id: PageId, partial: Partial<Page>): Promise<Page> {
     await this.init();
-    const existing = await db.pages.get(id);
-    if (!existing) {
-      throw new Error(`Page with id "${id}" not found.`);
+
+    // Construct patch with only defined fields to ensure atomic partial updates
+    const patch: Partial<Page> = {};
+    if (partial.title !== undefined) patch.title = partial.title;
+    if (partial.content !== undefined) patch.content = partial.content;
+    if (partial.icon !== undefined) patch.icon = partial.icon;
+    if (partial.coverColor !== undefined) patch.coverColor = partial.coverColor;
+    if (partial.parentId !== undefined) patch.parentId = partial.parentId;
+    if (partial.isFavorite !== undefined) patch.isFavorite = partial.isFavorite;
+    if (partial.isArchived !== undefined) patch.isArchived = partial.isArchived;
+    if (partial.isInbox !== undefined) patch.isInbox = partial.isInbox;
+    if (partial.tags !== undefined) patch.tags = Array.from(new Set(partial.tags));
+    if (partial.properties !== undefined) patch.properties = partial.properties;
+
+    patch.updatedAt = partial.updatedAt || Date.now();
+
+    const count = await db.pages.update(id, patch);
+    if (count === 0) {
+      const exists = await db.pages.get(id);
+      if (!exists) {
+        throw new Error(`Page with id "${id}" not found.`);
+      }
     }
 
-    const updated: Page = {
-      ...existing,
-      ...partial,
-      id: existing.id, // Immutable ID
-      createdAt: existing.createdAt,
-      updatedAt: Date.now(),
-      // deduplicate tags if updated
-      tags: partial.tags ? Array.from(new Set(partial.tags)) : existing.tags,
-    };
+    const updated = await db.pages.get(id);
+    if (!updated) {
+      throw new Error(`Page with id "${id}" not found after update.`);
+    }
 
-    await db.pages.put(updated);
     return updated;
   }
 

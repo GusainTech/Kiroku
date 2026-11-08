@@ -1,6 +1,6 @@
 # Kiroku
 
-> **A calm, local-first personal knowledge workspace combining the structured clarity of Notion with the networked thought of Obsidian.**
+> **A calm, local-first personal knowledge workspace combining the structured spatial clarity of Notion with the networked thought of Obsidian.**
 
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8%20%2F%207.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -12,85 +12,97 @@
 
 ---
 
-## 📖 Overview
+## 🌿 The Kiroku Philosophy
 
-**Kiroku** (記録 — *to record, chronicle, and preserve knowledge*) is an open-source, private, local-first personal knowledge management (PKM) web application. Designed for thinkers, writers, engineers, and researchers, Kiroku unites:
+In Japanese, **Kiroku (記録)** means *to chronicle, record, and preserve*.
 
-- **Notion's structured spatial clarity**: Nested sub-page hierarchies, custom properties, cover accent bands, and curated icon selectors.
-- **Obsidian's organic networked thinking**: Fast `[[Wikilinks]]` autocomplete, bi-directional backlinks, and Markdown portability.
-- **True Local-First Privacy**: Stored directly in your browser's IndexedDB via Dexie.js. Zero trackers, zero cloud dependencies, instant load times, and complete offline capability.
+Most modern productivity tools force an uncomfortable compromise:
+- **Cloud-first database tools (Notion)** are structured and visually elegant, but they introduce network latency, vendor lock-in, recurring subscription paywalls, and privacy concerns for sensitive personal thoughts.
+- **File-over-app tools (Obsidian)** provide unmatched privacy and networked linking, but often feel visually spartan, require complex plugin setups, and lack intuitive spatial page nesting.
+
+**Kiroku was created as a sanctuary for your thoughts.** It unites the warm, tactile clarity of physical stationery with the organic power of bi-directional graph thinking. Everything runs entirely within your browser's IndexedDB engine: zero latency, zero telemetry, zero server dependencies, and instant offline accessibility.
+
+```
+       Structured Spatial Clarity (Notion)
+                       +
+        Organic Networked Thought (Obsidian)
+                       +
+          Uncompromising Local Privacy (Dexie)
+                       =
+                  記録 KIROKU
+```
 
 ---
 
-## ✨ Key Features
+## ✨ Features at a Glance
 
-### 🌿 100% Local-First & Zero Latency
-- All pages, tags, properties, and edit histories are committed to your browser's **IndexedDB** engine.
-- Instantaneous startup with zero server network latency. Works completely offline.
+### 🔒 100% Local-First & Zero Latency
+- **Direct IndexedDB Persistence**: Every page, tag, link, and property is committed locally using Dexie.js. Your thoughts never touch a remote server.
+- **Immediate Startup**: Zero cold boots, zero network lag, and full offline functionality right out of the box.
 
 ### 🛡️ Hardened Save Coordinator & Safe Navigation
-- **Atomic Partial Updates**: Content updates only patch modified fields (`title`, `content`), guaranteeing that concurrent metadata changes (tags, custom properties, favorites) are never overwritten.
-- **Awaited Navigation Guard**: Switching documents, opening the dashboard, or clicking wikilinks automatically flushes and awaits persistence before unmounting, preventing data clipping.
+- **Atomic Partial Updates**: Writes to note content (`title`, `content`) only patch those specific fields, ensuring concurrent edits to tags, properties, or favorites are never overwritten.
+- **Awaited Navigation Guard**: Switching notes, returning to the dashboard, or clicking internal links automatically flushes and awaits persistence before unmounting.
 - **Sequential Write Serialization**: Eliminates race conditions between rapid keystrokes and in-flight database transactions.
-- **Status Transparency**: Real-time save indicators (`Saved`, `Saving...`, `Unsaved changes`, and `Save failed — Retry`).
+- **Real-Time Save Indicator**: Unobtrusive status feedback: `Saved`, `Saving...`, `Unsaved changes`, and `Save failed — Retry`.
 
-### 🖋️ Notion-Inspired Hierarchies & Metadata
-- **Infinite Page Nesting**: Create sub-pages and organize knowledge in intuitive trees without rigid folders.
-- **Custom Properties & Tags**: Attach custom key-value pairs (e.g., `Status`, `Category`, `Author`) and auto-color-hashed tags.
-- **Cozy Personalization**: Curated emoji icons and understated accent color bands (Slate, Stone, Warm Sand, Terracotta, Sage, Charcoal).
+### 🖋️ Notion-Inspired Spatial Organization
+- **Infinite Page Nesting**: Structure notes into parent and sub-pages just like a real notebook or Notion workspace.
+- **Custom Properties & Metadata**: Attach structured key-value pairs (e.g., `Status`, `Category`, `Due Date`) to any page.
+- **Curated Visual Accents**: Choose from curated emoji icons and understated accent color strips (Slate, Stone, Warm Sand, Terracotta, Sage, Charcoal).
 
-### 🕸️ Obsidian-Style Networked Connections
-- **Instant Wikilinks**: Type `[[` anywhere in the editor to open an autocomplete popup of existing documents, or press enter to create linked notes on the fly.
-- **Connected Backlinks**: Every note displays an automatic linked references panel showing other notes that reference it, complete with contextual snippets.
+### 🕸️ Obsidian-Style Bi-Directional Links
+- **Instant Wikilinks `[[...]]`**: Type `[[` anywhere in the editor to trigger a real-time autocomplete palette for linking documents or creating new ones.
+- **Connected Backlinks**: An automatic linked references section at the bottom of each document shows all other pages that reference it, complete with contextual snippets.
 
 ### 📥 Quick Capture Inbox
-- A dedicated scratchpad on the home dashboard to jot down fleeting thoughts, links, or ideas without organizing first.
-- One-click **"Move to Pages"** promotes inbox items into permanent workspace documents.
+- **Fleeting Thoughts Queue**: A dedicated capture scratchpad on the dashboard lets you jot down ideas, links, or tasks without friction.
+- **One-Click Promotion**: Easily triage inbox items into permanent workspace pages when you are ready to organize.
 
 ### 🎨 "Cozy Modern" Dual Aesthetic
-- **Soft Paper (Light Mode)**: Warm, glare-free `#F4F4F0` canvas and `#F9F9F5` editor surface designed for long writing sessions without harsh white glare.
-- **True Charcoal Graphite (Dark Mode)**: Deep, neutral `#161719` canvas and `#222428` editor with zero greenish tint or generic AI-slop gradients.
-- **Typography Switching**: Seamlessly toggle between **Inter (Sans)**, **Newsreader (Serif)**, and **JetBrains Mono (Monospace)**.
+- **Soft Paper (Light Mode)**: Warm, glare-free `#F4F4F0` canvas with `#F9F9F5` editor cards, subtle dividers, and earthy accents—comfortable for hours of deep writing.
+- **True Charcoal Graphite (Dark Mode)**: Deep `#161719` canvas and `#222428` editor with neutral `#32353C` borders—free of purple tints, olive casts, or AI-slop gradients.
+- **Reading Typeface Switcher**: Toggle instantly between **Inter (Sans)**, **Newsreader (Serif)**, and **JetBrains Mono (Monospace)**.
 
-### 📦 Portable Data Ownership
-- **Markdown Export**: Download individual documents as clean `.md` files with YAML frontmatter.
-- **Bulk Markdown Import**: Drag-and-drop or select external `.md` files (from Obsidian, Logseq, or Bear) with automatic `#tag` extraction.
-- **Full JSON Snapshot**: One-click complete backup and restore with both *Merge* and *Replace* modes.
+### 📦 Open Data Portability
+- **Markdown Export**: Download any note as a clean `.md` document with YAML frontmatter.
+- **Bulk Markdown Import**: Import folders of Markdown documents with automated `#tag` extraction.
+- **Full JSON Snapshot**: Export and restore your complete knowledge base with both *Merge* and *Replace* modes.
 
 ### 📱 Responsive & Mobile-First
-- Designed for mobile phones, tablets, and desktop displays.
-- Floating mobile navigation tab bar, touch-friendly hit targets (≥44px), and sliding drawer sidebar.
+- Fully adaptive interface optimized for smartphones, tablets, laptops, and ultra-wide desktop monitors.
+- Touch-friendly tap targets (≥44px), sliding drawer navigation, and a floating mobile navigation bar.
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Technology Stack
 
-| Technology | Purpose |
-| :--- | :--- |
-| **React 19** | Modern component architecture, functional hooks, concurrent rendering |
-| **TypeScript** | Strict end-to-end type safety |
-| **Vite 8** | Next-generation lightweight frontend bundler and development server |
-| **Tailwind CSS v4** | CSS-variables-driven design system with native light/dark mode |
-| **Dexie.js v4** | Robust, indexed relational database wrapper for IndexedDB |
-| **Lucide Icons** | Clean, minimalist, consistent interface iconography |
+| Layer | Technology | Rationale |
+| :--- | :--- | :--- |
+| **Framework** | [React 19](https://react.dev/) | Concurrent rendering, modern functional components & hooks |
+| **Language** | [TypeScript](https://www.typescriptlang.org/) | Strict type safety across data adapters, schemas, and UI |
+| **Build Tool** | [Vite 8](https://vitejs.dev/) | Instantaneous Hot Module Replacement & production tree-shaking |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) | Modern CSS variable tokens, `@custom-variant dark`, fluid typography |
+| **Local Database**| [Dexie.js v4](https://dexie.org/) | High-performance, indexed, transactional wrapper for native IndexedDB |
+| **Iconography** | [Lucide React](https://lucide.dev/) | Consistent, clean stroke icons matching a minimalist visual tone |
 
 ---
 
-## 🚀 Installation & Setup
+## 🚀 Local Installation & Setup
 
-Kiroku can be run on **macOS**, **Linux**, and **Windows**.
+Kiroku runs seamlessly across **macOS**, **Linux**, and **Windows**.
 
 ### Prerequisites
 
-Ensure you have **Node.js** (version 18.x or higher, 20.x recommended) and `npm` installed.
+Ensure you have **Node.js** (v18.0.0 or higher; v20 LTS recommended) and **npm** installed.
 
-Check your installation:
+Verify your environment:
 ```bash
-node -v
-npm -v
+node --version
+npm --version
 ```
 
-*(You can also use **pnpm**, **yarn**, or **bun** if preferred.)*
+*(You can also use **pnpm**, **yarn**, or **bun** if preferred).*
 
 ---
 
@@ -107,20 +119,20 @@ npm -v
    npm install
    ```
 
-3. **Start the local development server:**
+3. **Start the development server:**
    ```bash
    npm run dev
    ```
 
-4. **Open your browser:**
-   Navigate to `http://localhost:3000` (or `http://localhost:5173`).
+4. **Open Kiroku:**
+   Navigate to [http://localhost:3456](http://localhost:3456) in your web browser.
 
 ---
 
 ### 🐧 Linux Setup (Ubuntu / Debian / Fedora / Arch)
 
-1. **Install Git & Node.js (if not already installed):**
-   - *Ubuntu/Debian:*
+1. **Install Node.js & Git (if needed):**
+   - *Ubuntu / Debian:*
      ```bash
      sudo apt update && sudo apt install -y git nodejs npm
      ```
@@ -144,21 +156,20 @@ npm -v
    npm install
    ```
 
-4. **Launch the development server:**
+4. **Launch development server:**
    ```bash
    npm run dev
    ```
 
 5. **Open in browser:**
-   Open `http://localhost:3000`.
+   Open [http://localhost:3456](http://localhost:3456).
 
 ---
 
 ### 🪟 Windows Setup (PowerShell / Git Bash / Command Prompt)
 
 1. **Install Node.js & Git:**
-   - Download the official Node.js installer from [nodejs.org](https://nodejs.org/) (LTS recommended).
-   - Alternatively via Windows Package Manager:
+   - Download the LTS installer from [nodejs.org](https://nodejs.org/), or install via Windows Package Manager:
      ```powershell
      winget install OpenJS.NodeJS.LTS
      winget install Git.Git
@@ -170,95 +181,125 @@ npm -v
    cd kiroku
    ```
 
-3. **Install dependencies:**
+3. **Install project dependencies:**
    ```powershell
    npm install
    ```
 
-4. **Run the development server:**
+4. **Start the local server:**
    ```powershell
    npm run dev
    ```
 
 5. **Open in browser:**
-   Navigate to `http://localhost:3000`.
+   Navigate to [http://localhost:3456](http://localhost:3456).
 
 ---
 
-## 📜 Available NPM Scripts
+## 💻 Guidelines for Running Locally
 
-| Command | Description |
-| :--- | :--- |
-| `npm run dev` | Starts the Vite development server on port `3000` with host binding |
-| `npm run build` | Compiles TypeScript and creates an optimized production bundle in `dist/` |
-| `npm run preview` | Previews the production build locally |
-| `npm run lint` | Runs TypeScript type checking (`tsc --noEmit`) |
-| `npx tsx src/storage/__tests__/saveCoordinator.test.ts` | Runs the automated 31-assertion storage & autosave test suite |
+### Development Workflow & Port Configuration
+- Kiroku defaults to unique port **`3456`** with `--host=0.0.0.0` to avoid conflicts with projects already running on common ports like `3000`, `8080`, or Vite's `5173`.
+- You can preview the workspace on any other device (like a phone or tablet) connected to your local Wi-Fi network at `http://<your-local-ip>:3456`.
+- To specify a custom port:
+  ```bash
+  npm run dev -- --port 8080
+  ```
+
+### Inspecting Local Data in Browser DevTools
+Since Kiroku is 100% local-first, you can inspect your active database in real-time:
+1. Open Chrome, Edge, Brave, or Firefox Developer Tools (`F12` or `Option + Cmd + I`).
+2. Go to the **Application** (or **Storage**) tab.
+3. Under **Storage > IndexedDB**, expand **`KirokuNotesDB`**.
+4. You will see two object stores:
+   - `pages`: Stores documents, titles, markdown content, tags, custom properties, and hierarchies.
+   - `settings`: Stores local user preferences.
+
+### Running Automated Reliability Tests
+Kiroku includes an automated test suite verifying 31 assertions covering race condition prevention, atomic Dexie updates, debounced save flushes, and failure recovery:
+```bash
+npx tsx src/storage/__tests__/saveCoordinator.test.ts
+```
+
+### Production Build & Preview
+To create an optimized, production-ready static build:
+```bash
+npm run build
+npm run preview
+```
+The compiled assets will be placed in the `dist/` directory, ready to be served by any static host (Cloudflare Pages, Vercel, Netlify, GitHub Pages, or a self-hosted Nginx/Caddy container).
+
+### Type Checking
+To validate TypeScript types across the entire project:
+```bash
+npm run lint
+```
 
 ---
 
-## 📂 Project Directory Structure
+## 📂 Project Architecture & Directory Structure
 
 ```
 kiroku/
-├── index.html                   # HTML entry point with metadata & dark mode setup
-├── package.json                 # Project dependencies & scripts
+├── index.html                   # HTML entry point, typography & dark theme setup
+├── LICENSE                      # Official MIT License
+├── package.json                 # Dependencies & project scripts
 ├── tsconfig.json                # TypeScript compiler configuration
 ├── vite.config.ts               # Vite bundler configuration
 ├── src/
-│   ├── main.tsx                 # React application mounting point
-│   ├── App.tsx                  # Root shell and view router
-│   ├── index.css                # Global CSS variables, fonts, and dark theme tokens
+│   ├── main.tsx                 # React DOM mount point
+│   ├── App.tsx                  # Root shell and view coordination
+│   ├── index.css                # Tailwind CSS v4 setup & theme design tokens
 │   ├── types/
-│   │   └── index.ts             # Data models (Page, BacklinkInfo, StorageAdapter)
+│   │   └── index.ts             # TypeScript definitions (Page, StorageAdapter, etc.)
 │   ├── storage/
 │   │   ├── db.ts                # Dexie database instance ('KirokuNotesDB') & seeds
-│   │   ├── adapter.ts           # StorageAdapter implementation & atomic updates
+│   │   ├── adapter.ts           # StorageAdapter abstraction & atomic updates
 │   │   ├── saveCoordinator.ts   # Autosave engine, revision queue & navigation guard
-│   │   └── __tests__/           # Storage reliability verification test suite
+│   │   └── __tests__/           # Automated 31-assertion storage test suite
 │   ├── context/
 │   │   └── WorkspaceContext.tsx # Central workspace state & safe navigation coordination
 │   ├── utils/
-│   │   └── tagColors.ts         # Harmonious tag color palette hashing
+│   │   └── tagColors.ts         # Deterministic pastel color palette generator
 │   └── components/
 │       ├── layout/              # AppShell, TopNav, MobileTabBar
-│       ├── dashboard/           # WorkspaceDashboard & quick capture
-│       ├── editor/              # NoteEditor & MarkdownRenderer
+│       ├── dashboard/           # WorkspaceDashboard & quick capture scratchpad
+│       ├── editor/              # NoteEditor & live MarkdownRenderer
 │       ├── inbox/               # Quick capture triage view
 │       ├── all-notes/           # Search, sort, and tag filtering view
-│       ├── search/              # Cmd+K Command Search Palette
-│       ├── settings/            # JSON backup & Markdown export/import modal
-│       └── trash/               # Soft-deleted document restore & purge
+│       ├── search/              # Command Search Modal (Cmd/Ctrl + K)
+│       ├── settings/            # Data backup & Markdown import/export modal
+│       └── trash/               # Soft-deleted document recovery & permanent purge
 ```
 
 ---
 
 ## ⌨️ Keyboard Shortcuts
 
-| Shortcut | Action |
+| Shortcut | Description |
 | :--- | :--- |
-| `⌘ K` / `Ctrl + K` | Open global search command palette |
-| `[[` (while typing) | Open Obsidian-style internal link autocomplete |
-| `Esc` | Close modal / search dialog |
-| `Enter` (in search) | Open selected note (or create if note does not exist) |
+| `⌘ K` / `Ctrl + K` | Open global search palette from anywhere |
+| `[[` *(inside editor)* | Trigger Obsidian-style internal note link autocomplete |
+| `Esc` | Close any modal, search palette, or popover |
+| `Enter` *(in search)* | Open highlighted document (or create new note if query has no matches) |
 
 ---
 
-## 🔒 Privacy & Security
+## 🛡️ Privacy, Security & Data Ownership
 
-- **No Remote Telemetry**: Kiroku contains zero tracking cookies, remote analytics, or background telemetry.
-- **Sandboxed Local Storage**: Your notes exist exclusively inside your device's browser profile.
-- **Portability by Default**: You can export your entire knowledge base as standardized Markdown files or a JSON snapshot at any time.
+- **Zero Tracking**: No Google Analytics, no third-party trackers, and no background network telemetry.
+- **Device-Bound Storage**: Your data lives solely inside your browser's local sandbox.
+- **Portability by Default**: You are never locked in. Export your entire workspace anytime as standard Markdown files or an open JSON snapshot.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you would like to help improve Kiroku:
+We welcome contributions from the community! To contribute:
 
 1. Fork the repository.
-2. Create a feature branch: `git checkout -b feature/amazing-feature`.
-3. Commit your changes: `git commit -m 'Add amazing feature'`.
+2. Create your feature branch: `git checkout -b feature/amazing-feature`.
+3. Commit your changes: `git commit -m 'feat: add amazing feature'`.
 4. Push to the branch: `git push origin feature/amazing-feature`.
 5. Open a Pull Request.
 
@@ -266,8 +307,11 @@ Contributions are welcome! If you would like to help improve Kiroku:
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+Distributed under the **MIT License**. See `LICENSE` for more information.
 
 ---
 
-*Crafted with care for calm, focused, and resilient personal thinking.* 記録
+<p align="center">
+  <i>Crafted with care for calm, focused, and resilient personal thinking.</i><br />
+  <strong>記録 · Kiroku</strong>
+</p>
